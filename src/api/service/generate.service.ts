@@ -15,6 +15,10 @@ export async function generateProject(payload: GeneratePayload) {
     {
       name: "README.md",
       content: `# ${payload.description}\n\nGenerated via NodeLizr`
+    },
+    {
+      name: ".gitignore",
+      content: `node_modules\n.env\ndist\npackage-lock.json`
     }
   ];
 

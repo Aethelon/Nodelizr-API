@@ -17,8 +17,8 @@ router.post("/generate", async (req: Request, res: Response) => {
 
     zipStream.pipe(res);
   } catch (error) {
-    console.error("Erro ao gerar projeto:", error);
-    res.status(500).json({ message: "Erro ao gerar o projeto" });
+    console.error("Error generating project:", error);
+    res.status(500).json({ message: "Error generating project" });
   }
 });
 
