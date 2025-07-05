@@ -10,11 +10,11 @@ export async function generateProject(payload: GeneratePayload) {
     },
     {
       name: "src/index.js",
-      content: "// Hello from your generated project!"
+      content: "// Hello from your Nodelizr project!"
     },
     {
       name: "README.md",
-      content: `# ${payload.description}\n\nGenerated via NodeLizr`
+      content: `# Generated via NodeLizr`
     },
     {
       name: ".gitignore",
