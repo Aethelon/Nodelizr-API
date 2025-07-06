@@ -9,7 +9,6 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api", generateController);
-
 app.use("/api", librariesController);
 
 
