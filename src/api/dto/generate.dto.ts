@@ -1,5 +1,7 @@
 export interface Library {
   name: string;
+  description: string;
+  category: string;
   version?: string;
 }
 
