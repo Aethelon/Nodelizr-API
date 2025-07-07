@@ -69,7 +69,7 @@ export const LIBRARIES: Omit<Library, "version">[] = [
     category: "Web Frameworks",
   },
   {
-    name: "adonisjs",
+    name: "@adonisjs/core",
     description: "TypeScript-first MVC framework for server-side applications",
     category: "Web Frameworks",
   },
@@ -678,7 +678,7 @@ export const LIBRARIES: Omit<Library, "version">[] = [
     category: "Async Context & State",
   },
   {
-    name: "opentelemetry-api",
+    name: "@opentelemetry/api",
     description: "OpenTelemetry API for tracing and metrics",
     category: "Monitoring & Tracing",
   },
