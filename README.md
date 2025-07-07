@@ -150,4 +150,4 @@ Contributions are welcome:
 
 ## License
 
-ISC License. See [LICENSE](LICENSE) for details.
+MIT License. See [LICENSE](LICENSE) for details.

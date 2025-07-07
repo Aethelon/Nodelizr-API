@@ -4,7 +4,7 @@
   "description": " Nodelizr API for managing and serving Node.js applications",
   "main": "dist/config/server.js",
   "author": "Bruno Lira & Paulo de Araujo",
-  "license": "ISC",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "node --loader ts-node/esm src/config/server.ts",
