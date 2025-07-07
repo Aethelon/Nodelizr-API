@@ -5,6 +5,7 @@ package-lock.json
 # Build output
 dist/
 build/
+.vercel
 
 # Environment variables
 .env
@@ -39,3 +40,4 @@ coverage/
 .npm/
 .eslintcache
 .cache/
+

@@ -12,6 +12,7 @@
     "start": "node dist/config/server.js"
   },
   "dependencies": {
+    "@vercel/node": "^5.3.4",
     "apicache": "^1.6.3",
     "archiver": "^5.3.1",
     "cors": "^2.8.5",
