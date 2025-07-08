@@ -1,5 +1,5 @@
 <div align="center">
-<img src="./images/Nodelizerimg.svg" width="50%">
+<img src="./images/Nodelizerimg.svg" width="30%">
 
 # Nodelizr-API
 
