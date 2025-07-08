@@ -2,14 +2,14 @@
   "name": "nodelizr-api",
   "version": "1.0.0",
   "description": " Nodelizr API for managing and serving Node.js applications",
-  "main": "dist/config/server.js",
+  "main": "src/config/server.js",
   "author": "Bruno Lira & Paulo de Araujo",
   "license": "MIT",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "dev": "node --loader ts-node/esm src/config/server.ts",
     "build": "tsc",
-    "start": "node dist/config/server.js"
+    "start": "node src/config/server.js"
   },
   "dependencies": {
     "@vercel/node": "^5.3.4",

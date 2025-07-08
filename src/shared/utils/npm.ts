@@ -1,7 +1,10 @@
-import fetch from "node-fetch";
+const fetch = (...args: Parameters<typeof import("node-fetch")["default"]>) =>
+import("node-fetch").then((mod) => mod.default(...args));
 import { NpmPackageDetails } from "../../api/dto/libraries.dto.js";
 
-export async function fetchLatestVersion(packageName: string): Promise<string | null> {
+export async function fetchLatestVersion(
+  packageName: string
+): Promise<string | null> {
   try {
     const res = await fetch(`https://registry.npmjs.org/${packageName}/latest`);
     if (!res.ok) return null;
@@ -14,7 +17,9 @@ export async function fetchLatestVersion(packageName: string): Promise<string | 
   }
 }
 
-export async function fetchPackageInfoByName(packageName: string): Promise<NpmPackageDetails | null> {
+export async function fetchPackageInfoByName(
+  packageName: string
+): Promise<NpmPackageDetails | null> {
   try {
     const res = await fetch(`https://registry.npmjs.org/${packageName}/latest`);
 
@@ -28,12 +33,16 @@ export async function fetchPackageInfoByName(packageName: string): Promise<NpmPa
       return {
         name: data.name,
         version: data.version,
-        description: typeof data.description === "string" ? data.description : undefined,
+        description:
+          typeof data.description === "string" ? data.description : undefined,
       };
     }
     return null;
   } catch (err) {
-    console.error(`Error fetching detailed information for '${packageName}':`, err);
+    console.error(
+      `Error fetching detailed information for '${packageName}':`,
+      err
+    );
     return null;
   }
 }
