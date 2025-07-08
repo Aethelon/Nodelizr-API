@@ -104,7 +104,6 @@ export const LIBRARIES: Omit<Library, "version">[] = [
     description: "Framework for reusable & scalable APIs and servers",
     category: "Web Frameworks",
   },
-
   {
     name: "cors",
     description: "CORS middleware for Express",
@@ -204,7 +203,6 @@ export const LIBRARIES: Omit<Library, "version">[] = [
     description: "An SQL-friendly ORM for Node.js, built on top of Knex",
     category: "Databases & ORMs",
   },
-
   {
     name: "passport",
     description: "Simple, unobtrusive authentication for Node.js",
