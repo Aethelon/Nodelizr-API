@@ -62,6 +62,7 @@ npm run dev
 ```
 
 API base URL: `http://localhost:3000/api`
+Live API: `https://nodelizr-api.vercel.app/api`
 
 ### API Endpoints
 
