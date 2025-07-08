@@ -1,8 +1,12 @@
+<div align="center">
+<img src="./images/nodelizr.svg" width="50%">
+
 # Nodelizr-API
 
 A CLI and API tool to generate boilerplate Node.js projects with curated dependencies, bundled into a ZIP for quick start.
 
----
+</div>
+</br>
 
 ## Table of Contents
 
@@ -20,7 +24,7 @@ A CLI and API tool to generate boilerplate Node.js projects with curated depende
 - [License](#license)
 - [Authors](#authors)
 
----
+</br>
 
 ## Features
 
@@ -32,6 +36,8 @@ A CLI and API tool to generate boilerplate Node.js projects with curated depende
 - RESTful API built with Express and TypeScript
 - Cached library listing for fast retrieval
 - Extensible template for adding new files or custom templates
+
+</br>
 
 ## Getting Started
 
@@ -53,6 +59,8 @@ _or with yarn:_
 ```bash
 yarn install
 ```
+
+</br>
 
 ## Usage
 
@@ -117,6 +125,7 @@ curl http://localhost:3000/api/libraries
 # Search package
 curl http://localhost:3000/api/libraries/search?name=typescript
 ```
+</br>
 
 ## Project Structure
 
@@ -136,9 +145,13 @@ Nodelizr-API/
 └─ README.md
 ```
 
+</br>
+
 ## Available Libraries
 
 View `/src/api/data/libraries.list.ts` for the full curated list.
+
+</br>
 
 ## Contributing
 
@@ -150,9 +163,13 @@ Contributions are welcome:
 4. Push: `git push origin feature/YourFeature`
 5. Open a Pull Request
 
+</br>
+
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
+
+</br>
 
 ## Authors
 
