@@ -1,48 +1,35 @@
-const fetch = (...args: Parameters<typeof import("node-fetch")["default"]>) =>
-import("node-fetch").then((mod) => mod.default(...args));
-import { NpmPackageDetails } from "../../api/dto/libraries.dto.js";
-
 export async function fetchLatestVersion(
-  packageName: string
+  pkgName: string
 ): Promise<string | null> {
+  const { default: fetch } = await import("node-fetch");
   try {
-    const res = await fetch(`https://registry.npmjs.org/${packageName}/latest`);
+    const res = await fetch(`https://registry.npmjs.org/${pkgName}/latest`);
     if (!res.ok) return null;
-
-    const data: any = await res.json();
-    return typeof data.version === "string" ? data.version : null;
-  } catch (err) {
-    console.error(`Erro ao buscar ${packageName}:`, err);
+    const data = (await res.json()) as { version?: string };
+    return data.version ?? null;
+  } catch {
     return null;
   }
 }
 
 export async function fetchPackageInfoByName(
-  packageName: string
-): Promise<NpmPackageDetails | null> {
+  pkgName: string
+): Promise<{ name: string; version: string; description?: string } | null> {
+  const { default: fetch } = await import("node-fetch");
   try {
-    const res = await fetch(`https://registry.npmjs.org/${packageName}/latest`);
-
-    if (!res.ok) {
-      return null;
-    }
-
-    const data: any = await res.json();
-
-    if (typeof data.name === "string" && typeof data.version === "string") {
-      return {
-        name: data.name,
-        version: data.version,
-        description:
-          typeof data.description === "string" ? data.description : undefined,
-      };
-    }
-    return null;
-  } catch (err) {
-    console.error(
-      `Error fetching detailed information for '${packageName}':`,
-      err
-    );
+    const res = await fetch(`https://registry.npmjs.org/${pkgName}`);
+    if (!res.ok) return null;
+    const pkg = (await res.json()) as {
+      name: string;
+      description?: string;
+      "dist-tags"?: { latest: string };
+    };
+    return {
+      name: pkg.name,
+      version: pkg["dist-tags"]?.latest ?? "",
+      description: pkg.description,
+    };
+  } catch {
     return null;
   }
 }
