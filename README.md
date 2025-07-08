@@ -18,6 +18,7 @@ A CLI and API tool to generate boilerplate Node.js projects with curated depende
 - [Available Libraries](#available-libraries)
 - [Contributing](#contributing)
 - [License](#license)
+- [Authors](#authors)
 
 ---
 
@@ -152,3 +153,8 @@ Contributions are welcome:
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
+
+## Authors
+
+- [Bruno Lira](https://github.com/brunoliratm)
+- [Paulo de Araujo](https://github.com/Paulo-Araujo-Jr)
