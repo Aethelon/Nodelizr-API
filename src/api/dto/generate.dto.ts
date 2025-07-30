@@ -10,4 +10,5 @@ export interface GeneratePayload {
   description: string;
   version: string;
   libraries: Library[];
+  license?: string;
 }
