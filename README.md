@@ -29,7 +29,7 @@ A CLI and API tool to generate boilerplate Node.js projects with curated depende
 ## Features
 
 - Generate a fully scaffolded Node.js project with:
-  - `package.json`, `src/index.js`, `README.md`, `.gitignore`
+  - `package.json`, `src/index.js`, `public/`, `README.md`, `.gitignore`, `LICENSE`, `.env.example`
   - Custom metadata: name, version, description, author
   - Selectable libraries with latest versions
   - Downloadable ZIP package
@@ -85,6 +85,7 @@ Live API: `https://nodelizr-api.vercel.app/api`
        "author": "Your Name",
        "description": "My Node Project",
        "version": "1.0.0",
+       "license": "MIT",
        "libraries": [
          { "name": "express", "version": "^4.18.2" },
          { "name": "cors", "version": "^2.8.5" }
@@ -112,6 +113,7 @@ curl -X POST http://localhost:3000/api/generate \
     "author": "Bruno Lira & Paulo de Araujo",
     "description": "Meu Projeto Node",
     "version": "1.0.0",
+    "license": "MIT",
     "libraries": [
       { "name": "express", "version": "^4.18.2" },
       { "name": "cors", "version": "^2.8.5" },
@@ -125,6 +127,7 @@ curl http://localhost:3000/api/libraries
 # Search package
 curl http://localhost:3000/api/libraries/search?name=typescript
 ```
+
 </br>
 
 ## Project Structure
