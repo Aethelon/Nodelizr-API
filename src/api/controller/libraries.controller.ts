@@ -10,7 +10,7 @@ const router = Router();
 const cache = apicache.middleware;
 router.get(
   "/libraries",
-  cache("25 minutes"),
+  cache("30 minutes"),
   async (req: Request, res: Response) => {
     try {
       const libs: Library[] = await getLibrariesWithVersions();
