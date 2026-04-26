@@ -4,7 +4,11 @@ import {
 } from "../../api/data/generate.template.js";
 import { DEFAULT_TEMPLATE_ID, PROJECT_TEMPLATES } from "../../api/data/project-options.data.js";
 import { GeneratePayload } from "../../api/dto/generate.dto.js";
-import { TEMPLATE_IDS, TemplateId } from "../../api/dto/options.dto.js";
+import {
+  TEMPLATE_IDS,
+  TemplateId,
+  TemplatePreviewResponse,
+} from "../../api/dto/options.dto.js";
 import { fetchLatestVersion } from "../../shared/utils/npm.js";
 import { createZip } from "../../shared/utils/zip.js";
 
@@ -409,8 +413,10 @@ function getTemplateName(templateId: TemplateId): string {
   );
 }
 
-export async function generateProject(payload: GeneratePayload) {
-  const templateId = resolveTemplateId(payload.templateId);
+async function buildProjectEntries(
+  payload: GeneratePayload,
+  templateId: TemplateId
+) {
   const templateConfig = templateConfigs[templateId];
   const packageName = toPackageName(payload.description);
   const [requiredDependencies, devDependencies] = await Promise.all([
@@ -435,7 +441,7 @@ export async function generateProject(payload: GeneratePayload) {
   );
 
   const templateName = getTemplateName(templateId);
-  const entries = [
+  const entries: ZipEntry[] = [
     {
       name: "package.json",
       content: JSON.stringify(packageJson, null, 2),
@@ -509,6 +515,42 @@ yarn.lock
       ),
     },
   ];
+
+  return { entries, templateName };
+}
+
+export async function getTemplatePreview(
+  templateId?: string
+): Promise<TemplatePreviewResponse> {
+  const resolvedTemplateId = resolveTemplateId(templateId);
+  const previewPayload: GeneratePayload = {
+    author: "Nodelizr",
+    description: "preview-project",
+    version: "1.0.0",
+    license: "MIT",
+    libraries: [],
+    templateId: resolvedTemplateId,
+    presetId: "preview",
+  };
+
+  const { entries, templateName } = await buildProjectEntries(
+    previewPayload,
+    resolvedTemplateId
+  );
+
+  return {
+    templateId: resolvedTemplateId,
+    templateName,
+    files: entries.map((entry) => ({
+      path: entry.name,
+      content: entry.content,
+    })),
+  };
+}
+
+export async function generateProject(payload: GeneratePayload) {
+  const templateId = resolveTemplateId(payload.templateId);
+  const { entries } = await buildProjectEntries(payload, templateId);
 
   return createZip(entries);
 }

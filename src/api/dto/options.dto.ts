@@ -34,3 +34,14 @@ export interface GenerationOptionsResponse {
   templates: ProjectTemplateOption[];
   presets: ProjectPresetOption[];
 }
+
+export interface TemplatePreviewFile {
+  path: string;
+  content: string;
+}
+
+export interface TemplatePreviewResponse {
+  templateId: TemplateId;
+  templateName: string;
+  files: TemplatePreviewFile[];
+}

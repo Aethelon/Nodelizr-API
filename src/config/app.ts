@@ -21,6 +21,7 @@ app.use((req, res) => {
       { method: "GET", path: "/api/libraries" },
       { method: "GET", path: "/api/libraries/search?name={package}" },
       { method: "GET", path: "/api/options" },
+      { method: "GET", path: "/api/templates/:templateId/preview" },
     ],
   });
 });
