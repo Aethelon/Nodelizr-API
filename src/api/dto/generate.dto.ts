@@ -1,3 +1,5 @@
+import { TemplateId } from "./options.dto.js";
+
 export interface Library {
   name: string;
   description: string;
@@ -5,10 +7,17 @@ export interface Library {
   version?: string;
 }
 
+export interface SelectedLibrary {
+  name: string;
+  version?: string;
+}
+
 export interface GeneratePayload {
   author: string;
   description: string;
   version: string;
-  libraries: Library[];
+  libraries: SelectedLibrary[];
   license?: string;
+  templateId?: TemplateId;
+  presetId?: string;
 }

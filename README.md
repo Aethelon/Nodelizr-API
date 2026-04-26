@@ -32,6 +32,8 @@ A CLI and API tool to generate boilerplate Node.js projects with curated depende
   - `package.json`, `src/index.js`, `public/`, `README.md`, `.gitignore`, `LICENSE`, `.env.example`
   - Custom metadata: name, version, description, author
   - Selectable libraries with latest versions
+  - Real templates (Starter, Express API TS, Fastify API TS, CLI TS, Worker)
+  - Use-case presets (SaaS API, Public API, Microservice, CLI Automation, etc.)
   - Downloadable ZIP package
 - RESTful API built with Express and TypeScript
 - Cached library listing for fast retrieval
@@ -81,14 +83,16 @@ Live API: `https://nodelizr-api.vercel.app/api`
    - **Headers**: `Content-Type: application/json`
    - **Body**:
      ```json
-     {
-       "author": "Your Name",
-       "description": "My Node Project",
-       "version": "1.0.0",
-       "license": "MIT",
-       "libraries": [
-         { "name": "express", "version": "^4.18.2" },
-         { "name": "cors", "version": "^2.8.5" }
+      {
+        "author": "Your Name",
+        "description": "My Node Project",
+        "version": "1.0.0",
+        "license": "MIT",
+        "templateId": "express-api-ts",
+        "presetId": "saas-api",
+        "libraries": [
+          { "name": "express", "version": "^4.18.2" },
+          { "name": "cors", "version": "^2.8.5" }
        ]
      }
      ```
@@ -103,6 +107,11 @@ Live API: `https://nodelizr-api.vercel.app/api`
    - **GET** `/api/libraries/search?name={packageName}`
    - **Response**: npm package details or error message
 
+4. **List Templates and Presets**
+
+   - **GET** `/api/options`
+   - **Response**: JSON with `templates[]` and `presets[]`
+
 ### Example Requests
 
 ```bash
@@ -114,6 +123,8 @@ curl -X POST http://localhost:3000/api/generate \
     "description": "Meu Projeto Node",
     "version": "1.0.0",
     "license": "MIT",
+    "templateId": "express-api-ts",
+    "presetId": "saas-api",
     "libraries": [
       { "name": "express", "version": "^4.18.2" },
       { "name": "cors", "version": "^2.8.5" },
@@ -126,6 +137,9 @@ curl http://localhost:3000/api/libraries
 
 # Search package
 curl http://localhost:3000/api/libraries/search?name=typescript
+
+# List templates and presets
+curl http://localhost:3000/api/options
 ```
 
 </br>

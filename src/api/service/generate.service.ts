@@ -1,6 +1,32 @@
-import { getPackageJson } from "../../api/data/generate.template.js";
+import {
+  getPackageJson,
+  toPackageName,
+} from "../../api/data/generate.template.js";
+import { DEFAULT_TEMPLATE_ID, PROJECT_TEMPLATES } from "../../api/data/project-options.data.js";
 import { GeneratePayload } from "../../api/dto/generate.dto.js";
+import { TEMPLATE_IDS, TemplateId } from "../../api/dto/options.dto.js";
+import { fetchLatestVersion } from "../../shared/utils/npm.js";
 import { createZip } from "../../shared/utils/zip.js";
+
+interface ZipEntry {
+  name: string;
+  content: string;
+}
+
+interface TemplateRuntimeConfig {
+  main: string;
+  scripts: Record<string, string>;
+  type?: "commonjs" | "module";
+  requiredDependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  extraFields?: (packageName: string) => Record<string, unknown>;
+  files: (payload: GeneratePayload) => ZipEntry[];
+}
+
+interface VersionCacheEntry {
+  version: string;
+  expiresAt: number;
+}
 
 function getLicenseText(license: string, author: string) {
   const year = new Date().getFullYear();
@@ -71,26 +97,360 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   }
 }
 
+const tsTooling = {
+  typescript: "^5.4.0",
+  "ts-node": "^10.9.2",
+  "@types/node": "^20.5.9",
+};
+
+const VERSION_CACHE_TTL_MS = 15 * 60 * 1000;
+const latestVersionCache = new Map<string, VersionCacheEntry>();
+
+const templateConfigs: Record<TemplateId, TemplateRuntimeConfig> = {
+  [TEMPLATE_IDS.NODE_BASIC_JS]: {
+    main: "src/index.js",
+    scripts: {
+      dev: "node --watch src/index.js",
+      start: "node src/index.js",
+    },
+    files: () => [
+      {
+        name: "src/index.js",
+        content: `require("dotenv").config();
+
+console.log("Welcome to your Nodelizr project!");
+console.log("Environment:", process.env.NODE_ENV || "development");
+`,
+      },
+    ],
+  },
+  [TEMPLATE_IDS.EXPRESS_API_TS]: {
+    main: "dist/server.js",
+    scripts: {
+      dev: "ts-node src/server.ts",
+      build: "tsc",
+      start: "npm run build && node dist/server.js",
+    },
+    requiredDependencies: {
+      express: "^4.21.2",
+    },
+    devDependencies: {
+      ...tsTooling,
+      "@types/express": "^4.17.21",
+    },
+    files: () => [
+      {
+        name: "src/app.ts",
+        content: `import express from "express";
+import healthRouter from "./routes/health.route";
+
+const app = express();
+
+app.use(express.json());
+app.use("/health", healthRouter);
+
+export default app;
+`,
+      },
+      {
+        name: "src/routes/health.route.ts",
+        content: `import { Router } from "express";
+
+const router = Router();
+
+router.get("/", (_req, res) => {
+  res.status(200).json({ status: "ok", service: "express-api-ts" });
+});
+
+export default router;
+`,
+      },
+      {
+        name: "src/server.ts",
+        content: `import app from "./app";
+
+const PORT = Number(process.env.PORT ?? 3000);
+
+app.listen(PORT, () => {
+  console.log(\`API running on port \${PORT}\`);
+});
+`,
+      },
+      {
+        name: "tsconfig.json",
+        content: `{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}
+`,
+      },
+    ],
+  },
+  [TEMPLATE_IDS.FASTIFY_API_TS]: {
+    main: "dist/server.js",
+    scripts: {
+      dev: "ts-node src/server.ts",
+      build: "tsc",
+      start: "npm run build && node dist/server.js",
+    },
+    requiredDependencies: {
+      fastify: "^4.28.1",
+    },
+    devDependencies: {
+      ...tsTooling,
+    },
+    files: () => [
+      {
+        name: "src/server.ts",
+        content: `import Fastify from "fastify";
+
+const server = Fastify({ logger: true });
+const PORT = Number(process.env.PORT ?? 3000);
+
+server.get("/health", async () => {
+  return { status: "ok", service: "fastify-api-ts" };
+});
+
+server
+  .listen({ port: PORT, host: "0.0.0.0" })
+  .then(() => {
+    console.log(\`Fastify API running on port \${PORT}\`);
+  })
+  .catch((error) => {
+    server.log.error(error);
+    process.exit(1);
+  });
+`,
+      },
+      {
+        name: "tsconfig.json",
+        content: `{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}
+`,
+      },
+    ],
+  },
+  [TEMPLATE_IDS.CLI_TOOL_TS]: {
+    main: "dist/index.js",
+    scripts: {
+      dev: "ts-node src/index.ts",
+      build: "tsc",
+      start: "npm run build && node dist/index.js",
+    },
+    requiredDependencies: {
+      commander: "^12.1.0",
+    },
+    devDependencies: {
+      ...tsTooling,
+    },
+    extraFields: (packageName: string) => ({
+      bin: {
+        [packageName]: "dist/index.js",
+      },
+    }),
+    files: (payload) => [
+      {
+        name: "src/index.ts",
+        content: `#!/usr/bin/env node
+import { Command } from "commander";
+
+const program = new Command();
+
+program
+  .name("${toPackageName(payload.description)}")
+  .description("${payload.description || "CLI generated with Nodelizr"}")
+  .version("${payload.version || "1.0.0"}");
+
+program
+  .command("hello")
+  .description("Run a sample command")
+  .action(() => {
+    console.log("Hello from your Nodelizr CLI!");
+  });
+
+program.parse();
+`,
+      },
+      {
+        name: "tsconfig.json",
+        content: `{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}
+`,
+      },
+    ],
+  },
+  [TEMPLATE_IDS.WORKER_SCHEDULER_JS]: {
+    main: "src/worker.js",
+    scripts: {
+      dev: "node --watch src/worker.js",
+      start: "node src/worker.js",
+    },
+    files: () => [
+      {
+        name: "src/worker.js",
+        content: `require("dotenv").config();
+
+console.log("Worker started");
+
+setInterval(() => {
+  const now = new Date().toISOString();
+  console.log(\`[\${now}] Worker heartbeat\`);
+}, 60_000);
+`,
+      },
+    ],
+  },
+};
+
+export function isTemplateSupported(templateId: string): templateId is TemplateId {
+  return Object.prototype.hasOwnProperty.call(templateConfigs, templateId);
+}
+
+function resolveRangePrefix(fallbackVersion: string): string {
+  if (fallbackVersion.startsWith("~")) {
+    return "~";
+  }
+
+  if (fallbackVersion.startsWith("^")) {
+    return "^";
+  }
+
+  return "^";
+}
+
+async function resolveLatestVersion(
+  packageName: string,
+  fallbackVersion: string
+): Promise<string> {
+  const now = Date.now();
+  const cached = latestVersionCache.get(packageName);
+  if (cached && cached.expiresAt > now) {
+    return cached.version;
+  }
+
+  const latestVersion = await fetchLatestVersion(packageName);
+  if (!latestVersion) {
+    return fallbackVersion;
+  }
+
+  const resolvedVersion = `${resolveRangePrefix(fallbackVersion)}${latestVersion}`;
+
+  latestVersionCache.set(packageName, {
+    version: resolvedVersion,
+    expiresAt: now + VERSION_CACHE_TTL_MS,
+  });
+
+  return resolvedVersion;
+}
+
+async function resolveDependencyVersions(
+  dependencies?: Record<string, string>
+): Promise<Record<string, string> | undefined> {
+  if (!dependencies) {
+    return undefined;
+  }
+
+  const resolvedEntries = await Promise.all(
+    Object.entries(dependencies).map(async ([packageName, fallbackVersion]) => {
+      const resolvedVersion = await resolveLatestVersion(
+        packageName,
+        fallbackVersion
+      );
+      return [packageName, resolvedVersion] as const;
+    })
+  );
+
+  return Object.fromEntries(resolvedEntries);
+}
+
+function resolveTemplateId(templateId?: string): TemplateId {
+  if (templateId && isTemplateSupported(templateId)) {
+    return templateId;
+  }
+
+  return DEFAULT_TEMPLATE_ID;
+}
+
+function getTemplateName(templateId: TemplateId): string {
+  return (
+    PROJECT_TEMPLATES.find((template) => template.id === templateId)?.name ||
+    "Node.js Starter (JavaScript)"
+  );
+}
+
 export async function generateProject(payload: GeneratePayload) {
+  const templateId = resolveTemplateId(payload.templateId);
+  const templateConfig = templateConfigs[templateId];
+  const packageName = toPackageName(payload.description);
+  const [requiredDependencies, devDependencies] = await Promise.all([
+    resolveDependencyVersions(templateConfig.requiredDependencies),
+    resolveDependencyVersions(templateConfig.devDependencies),
+  ]);
+
+  const packageJson = getPackageJson(
+    {
+      ...payload,
+      libraries: Array.isArray(payload.libraries) ? payload.libraries : [],
+      templateId,
+    },
+    {
+      main: templateConfig.main,
+      scripts: templateConfig.scripts,
+      type: templateConfig.type,
+      requiredDependencies,
+      devDependencies,
+      extraFields: templateConfig.extraFields?.(packageName),
+    }
+  );
+
+  const templateName = getTemplateName(templateId);
   const entries = [
     {
       name: "package.json",
-      content: JSON.stringify(getPackageJson(payload), null, 2),
+      content: JSON.stringify(packageJson, null, 2),
     },
-    {
-      name: "src/index.js",
-      content: `// Entry point for your Nodelizr project
-require('dotenv').config && require('dotenv').config();
-
-console.log('Welcome to your Nodelizr project!');
-console.log('Environment:', process.env.NODE_ENV || 'development');
-`,
-    },
+    ...templateConfig.files(payload),
     {
       name: "README.md",
       content: `# ${payload.description || "Generated via Nodelizr"}
 
 This project was generated with [Nodelizr](https://github.com/Aethelon/Nodelizr-API).
+
+## Starter Configuration
+
+- Template: ${templateName}
+- Preset: ${payload.presetId || "Custom"}
 
 ## Getting Started
 
@@ -118,7 +478,7 @@ This project is licensed under the ${payload.license || "MIT"} license.
 
 ---
 
-Automatically generated. Customize as needed!
+Automatically generated. Customize as needed and ship fast.
 `,
     },
     {

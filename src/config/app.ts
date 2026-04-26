@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import generateController from "../api/controller/generate.controller.js";
 import librariesController from "../api/controller/libraries.controller.js";
+import optionsController from "../api/controller/options.controller.js";
 
 const app = express();
 
@@ -10,6 +11,7 @@ app.use(express.json());
 
 app.use("/api", generateController);
 app.use("/api", librariesController);
+app.use("/api", optionsController);
 
 app.use((req, res) => {
   res.status(404).json({
@@ -18,6 +20,7 @@ app.use((req, res) => {
       { method: "POST", path: "/api/generate" },
       { method: "GET", path: "/api/libraries" },
       { method: "GET", path: "/api/libraries/search?name={package}" },
+      { method: "GET", path: "/api/options" },
     ],
   });
 });
